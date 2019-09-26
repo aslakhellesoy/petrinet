@@ -17,8 +17,8 @@ module Petrinet
     end
 
     class Transition
-      def initialize(name, ins, outs)
-        @name, @takes, @gives = name, ins, outs
+      def initialize(name, takes, gives)
+        @name, @takes, @gives = name, takes, gives
       end
 
       def fire
@@ -52,23 +52,23 @@ module Petrinet
 
     class Builder
       def initialize
-        @places = Hash.new {|h,k| h[k] = Place.new}
+        @place_by_name = Hash.new {|h,k| h[k] = Place.new}
         @transitions = Hash.new
       end
 
       def transition(transition_name, arcs)
-        ins = [arcs[:take]].flatten.map do |place_name|
-          @places[place_name]
+        takes = [arcs[:take]].flatten.map do |place_name|
+          @place_by_name[place_name]
         end
-        outs = [arcs[:give]].flatten.map do |place_name|
-          @places[place_name]
+        gives = [arcs[:give]].flatten.map do |place_name|
+          @place_by_name[place_name]
         end
 
-        @transitions[transition_name] = Transition.new(transition_name, ins, outs)
+        @transitions[transition_name] = Transition.new(transition_name, takes, gives)
       end
 
       def token(place_name, count)
-        @places[place_name].tokens = count
+        @place_by_name[place_name].tokens = count
       end
 
       def net
