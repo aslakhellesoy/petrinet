@@ -1,9 +1,24 @@
-RSpec.describe Petrinet do
-  it "has a version number" do
-    expect(Petrinet::VERSION).not_to be nil
-  end
+RSpec.describe Petrinet::Net do
+  describe 'voting' do
+    before do
+      @pn = Petrinet::Net.build do
+        transition(:convert, take: :negative, give: :affirmative)
+        transition(:dissent, take: :affirmative, give: :negative)
+        transition(:yay, take: :vote, give: :affirmative)
+        transition(:nay, take: :vote, give: :negative)
+        token(:vote, 1)
+      end
+    end
 
-  it "does something useful" do
-    expect(false).to eq(true)
+    it "allows a transition" do
+      @pn.fire(:yay)
+    end
+
+    it "does not allow a transition" do
+      @pn.fire(:yay)
+      expect do
+        @pn.fire(:yay)
+      end.to raise_error('Cannot fire: yay')
+    end
   end
 end
