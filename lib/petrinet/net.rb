@@ -1,3 +1,5 @@
+require_relative 'pnml_builder'
+
 module Petrinet
   # Represents a Petri Net in a particular state. Instances of this class are immutable. The following methods return
   # new instances:
@@ -9,6 +11,11 @@ module Petrinet
   # A good explanation of how this works with Petri Nets is here: https://github.com/bitwrap/bitwrap-io/blob/master/whitepaper.md
   #
   class Net
+    def self.from_pnml(xml)
+      builder = PnmlBuilder.new(xml)
+      builder.net
+    end
+
     def self.build(&proc)
       builder = Builder.new
       builder.instance_exec(&proc)
@@ -23,9 +30,9 @@ module Petrinet
     end
 
     # Marks the petri net and returns a new instance
-    def mark(marking)
+    def mark(markings)
       new_state_vector = @state_vector.dup
-      marking.each do |place_name, token_count|
+      markings.each do |place_name, token_count|
         index = @place_index_by_place_name[place_name]
         new_state_vector[index] = token_count
       end
@@ -34,6 +41,8 @@ module Petrinet
 
     def fire(transition_name)
       transition_vector = @transition_vector_by_transition_name[transition_name]
+      raise "Unknown transition: #{transition_name}. Known transitions: #{@transition_vector_by_transition_name.keys}" if transition_vector.nil?
+
       new_state_vector = @state_vector.zip(transition_vector).map { |s, t| s + t }
       invalid = new_state_vector.any? { |s| s.negative? }
       raise "Cannot fire: #{transition_name}" if invalid

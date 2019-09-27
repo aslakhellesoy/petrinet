@@ -25,4 +25,14 @@ RSpec.describe Petrinet::Net do
       expect(@pn.fireable).to eq(Set[:yay, :nay])
     end
   end
+
+  describe ".from_pnml" do
+    it "builds a net" do
+      @pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../examples/voting/voting.xml'))
+      @pn = @pn.fire(:YAY)
+      expect do
+        @pn.fire(:YAY)
+      end.to raise_error('Cannot fire: YAY')
+    end
+  end
 end
