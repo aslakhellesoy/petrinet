@@ -6,8 +6,8 @@ RSpec.describe Petrinet::Net do
         transition(:dissent, take: :affirmative, give: :negative)
         transition(:yay, take: :vote, give: :affirmative)
         transition(:nay, take: :vote, give: :negative)
-        token(:vote, 1)
       end
+      @pn.mark(vote: 1)
     end
 
     it "allows a transition" do
@@ -20,5 +20,7 @@ RSpec.describe Petrinet::Net do
         @pn.fire(:yay)
       end.to raise_error('Cannot fire: yay')
     end
+
+    it "enumerates fireable states"
   end
 end
