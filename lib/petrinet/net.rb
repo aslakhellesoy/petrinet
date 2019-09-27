@@ -1,5 +1,9 @@
 module Petrinet
-  # Represents a Petri Net in a particular state.
+  # Represents a Petri Net in a particular state. Instances of this class are immutable. The following methods return
+  # new instances:
+  #
+  # * mark
+  # * fire
   #
   # The internal representation uses a VASS - https://en.wikipedia.org/wiki/Vector_addition_system
   # A good explanation of how this works with Petri Nets is here: https://github.com/bitwrap/bitwrap-io/blob/master/whitepaper.md
@@ -18,6 +22,7 @@ module Petrinet
       freeze
     end
 
+    # Marks the petri net and returns a new instance
     def mark(marking)
       new_state_vector = @state_vector.dup
       marking.each do |place_name, token_count|
@@ -29,8 +34,8 @@ module Petrinet
 
     def fire(transition_name)
       transition_vector = @transition_vector_by_transition_name[transition_name]
-      new_state_vector = @state_vector.zip(transition_vector).map { |s,t| s + t }
-      invalid = new_state_vector.any? {|s| s.negative?}
+      new_state_vector = @state_vector.zip(transition_vector).map { |s, t| s + t }
+      invalid = new_state_vector.any? { |s| s.negative? }
       raise "Cannot fire: #{transition_name}" if invalid
       self.class.new(new_state_vector, @place_index_by_place_name, @transition_vector_by_transition_name)
     end
@@ -95,14 +100,6 @@ module Petrinet
             transition_vector[index] += 1
           end
           transition_vector
-        end
-      end
-
-      class Place
-        attr_accessor :tokens
-
-        def initialize
-          @tokens = 0
         end
       end
     end
