@@ -6,11 +6,11 @@ Gem::Specification.new do |spec|
   spec.name          = "petrinet"
   spec.version       = Petrinet::VERSION
   spec.authors       = ["Aslak Hellesøy"]
-  spec.email         = ["aslak.hellesoy@gmail.com"]
+  spec.email         = ["aslak.hellesoy@smartbear.com"]
 
   spec.summary       = %q{Petri Net simulator}
   spec.description   = spec.description
-  spec.homepage      = "https://github.com/aslakhellesoy/petrinet"
+  spec.homepage      = "https://github.com/cucumber/petrinet"
   spec.license       = "MIT"
 
   spec.metadata["allowed_push_host"] = "https://rubygems.org"

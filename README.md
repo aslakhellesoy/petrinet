@@ -5,7 +5,7 @@ This library implements petri nets with the following functionality:
 * A DSL to define a PN
 * Import a PN from PNML
 * Generate diagrams
-* Simulate
+* Simulate transition
 
 ## Installation
 
