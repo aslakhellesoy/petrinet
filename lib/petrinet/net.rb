@@ -15,13 +15,16 @@ module Petrinet
       @state_vector = state_vector
       @place_index_by_place_name = place_index_by_place_name
       @transition_vectors_by_transition_name = transition_vectors_by_transition_name
+      freeze
     end
 
     def mark(marking)
+      new_state_vector = @state_vector.dup
       marking.each do |place_name, token_count|
         index = @place_index_by_place_name[place_name]
-        @state_vector[index] = token_count
+        new_state_vector[index] = token_count
       end
+      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vectors_by_transition_name)
     end
 
     def fire(transition_name)
@@ -29,7 +32,11 @@ module Petrinet
       new_state_vector = @state_vector.zip(transition_vector).map { |s,t| s + t }
       invalid = new_state_vector.any? {|s| s.negative?}
       raise "Cannot fire: #{transition_name}" if invalid
-      @state_vector = new_state_vector
+      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vectors_by_transition_name)
+    end
+
+    def fireable
+      Set[:nay, :yay]
     end
 
     class Builder
@@ -59,7 +66,7 @@ module Petrinet
         end
         transition_vectors_by_transition_name = Hash[transition_vectors_by_transition_name_pairs]
 
-        Net.new(@state_vector, place_index_by_place_name, transition_vectors_by_transition_name)
+        Net.new(@state_vector.freeze, place_index_by_place_name.freeze, transition_vectors_by_transition_name.freeze)
       end
 
       class Transition
