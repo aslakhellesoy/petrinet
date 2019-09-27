@@ -28,11 +28,21 @@ RSpec.describe Petrinet::Net do
 
   describe ".from_pnml" do
     it "builds a net" do
-      @pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../examples/voting/voting.xml'))
-      @pn = @pn.fire(:YAY)
+      pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../examples/voting/voting.xml'))
+      pn = pn.fire(:YAY)
       expect do
-        @pn.fire(:YAY)
+        pn.fire(:YAY)
       end.to raise_error('Cannot fire: YAY')
+    end
+  end
+
+  describe ".to_svg" do
+    it "produces an svg" do
+      pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../examples/voting/voting.xml'))
+      dot = pn.to_svg
+      puts "----"
+      puts dot
+      puts "===="
     end
   end
 end

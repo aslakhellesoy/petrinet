@@ -1,4 +1,5 @@
 require_relative 'pnml_builder'
+require 'graphviz/dsl'
 
 module Petrinet
   # Represents a Petri Net in a particular state. Instances of this class are immutable. The following methods return
@@ -40,13 +41,23 @@ module Petrinet
     end
 
     def fire(transition_name)
+      new_state_vector = new_state_vector(transition_name)
+      raise "Cannot fire: #{transition_name}" unless valid?(new_state_vector)
+      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vector_by_transition_name)
+    end
+
+    def fireable?(transition_name)
+      !new_state_vector(transition_name).any? { |s| s.negative? }
+    end
+
+    def valid?(state_vector)
+      !(state_vector.any? { |s| s.negative? })
+    end
+
+    def new_state_vector(transition_name)
       transition_vector = @transition_vector_by_transition_name[transition_name]
       raise "Unknown transition: #{transition_name}. Known transitions: #{@transition_vector_by_transition_name.keys}" if transition_vector.nil?
-
-      new_state_vector = @state_vector.zip(transition_vector).map { |s, t| s + t }
-      invalid = new_state_vector.any? { |s| s.negative? }
-      raise "Cannot fire: #{transition_name}" if invalid
-      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vector_by_transition_name)
+      @state_vector.zip(transition_vector).map { |s, t| s + t }
     end
 
     def fireable
@@ -60,6 +71,53 @@ module Petrinet
         end
       end
       result
+    end
+
+    def to_svg
+      # Lexical scoping because the graphviz DSL changes the value of self
+      net = self
+      transition_vector_by_transition_name = @transition_vector_by_transition_name
+      place_name_by_place_index = @place_index_by_place_name.invert
+      state_vector = @state_vector
+
+      tempfile = Tempfile.create('petrinet')
+      digraph :PetriNet do
+        graph[bgcolor: 'white', labeljust: 'l', labelloc: 't', nodesep: 0.5, penwidth: 0, ranksep: 0.5, style: 'filled']
+
+        transition_vector_by_transition_name.each do |transition_name, transition_vector|
+          # puts "#{transition_name} -> #{transition_vector}"
+          transition_vector.each_with_index do |direction, place_index|
+            place_name = place_name_by_place_index[place_index]
+            raise "No place_name for index #{place_index}: #{place_name_by_place_index}" if place_name.nil?
+            if direction < 0
+              # puts "#{place_name} -> #{transition_name}"
+              self.send("node_#{place_name}".to_sym) << self.send("node_#{transition_name}".to_sym)
+            elsif direction > 0
+              # puts "#{transition_name} -> #{place_name}"
+              self.send("node_#{transition_name}".to_sym) << self.send("node_#{place_name}".to_sym)
+            end
+          end
+
+          subgraph "cluster_transition_#{transition_name}" do
+            graph[label: transition_name, labeljust: 'l', labelloc: 'c']
+            fillcolor = net.fireable?(transition_name) ? 'black' : 'red'
+            node[shape: 'box', fillcolor: fillcolor, style: "solid, filled", height: 0.1, width: 0.5]
+            self.send("node_#{transition_name}".to_sym)[label: '', height: 0.1, width: 0.5]
+          end
+        end
+
+        place_name_by_place_index.each do |place_index, place_name|
+          marking = state_vector[place_index]
+          subgraph "cluster_place_#{place_name}" do
+            graph[label: place_name]
+            node[shape: 'circle']
+            self.send("node_#{place_name}".to_sym)[label: marking]
+          end
+        end
+
+        output :dot => tempfile.path # STDOUT
+      end
+      tempfile.read
     end
 
     class Builder
