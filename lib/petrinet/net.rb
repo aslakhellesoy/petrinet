@@ -1,5 +1,5 @@
 require_relative 'pnml_builder'
-require_relative 'svg_builder'
+require_relative 'graphviz_builder'
 
 module Petrinet
   # Represents a Petri Net in a particular state. Instances of this class are immutable. The following methods return
@@ -19,50 +19,44 @@ module Petrinet
 
     def self.build(&proc)
       builder = Builder.new
-      builder.instance_exec(&proc)
+      proc.call(builder)
       builder.net
     end
 
-    def initialize(state_vector, place_index_by_place_name, transition_vector_by_transition_name)
+    def initialize(state_vector, place_index_by_place_name, transition_vectors_by_transition_name)
       @state_vector = state_vector
       @place_index_by_place_name = place_index_by_place_name
-      @transition_vector_by_transition_name = transition_vector_by_transition_name
+      @transition_vectors_by_transition_name = transition_vectors_by_transition_name
       freeze
     end
 
     # Marks the petri net and returns a new instance
     def mark(markings)
-      new_state_vector = @state_vector.dup
+      new_state_vector = Array.new(@state_vector.size, 0)
       markings.each do |place_name, token_count|
         index = @place_index_by_place_name[place_name]
         new_state_vector[index] = token_count
       end
-      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vector_by_transition_name)
+      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vectors_by_transition_name)
     end
 
     def fire(transition_name)
       new_state_vector = new_state_vector(transition_name)
-      raise "Cannot fire: #{transition_name}" unless valid?(new_state_vector)
-      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vector_by_transition_name)
+      self.class.new(new_state_vector, @place_index_by_place_name, @transition_vectors_by_transition_name)
     end
 
     def fireable?(transition_name)
-      !new_state_vector(transition_name).any? { |s| s.negative? }
-    end
-
-    def valid?(state_vector)
-      !(state_vector.any? { |s| s.negative? })
-    end
-
-    def new_state_vector(transition_name)
-      transition_vector = @transition_vector_by_transition_name[transition_name]
-      raise "Unknown transition: #{transition_name}. Known transitions: #{@transition_vector_by_transition_name.keys}" if transition_vector.nil?
-      @state_vector.zip(transition_vector).map { |s, t| s + t }
+      begin
+        new_state_vector(transition_name)
+        true
+      rescue
+        false
+      end
     end
 
     def fireable
       result = Set.new
-      @transition_vector_by_transition_name.keys.each do |transition_name|
+      @transition_vectors_by_transition_name.keys.each do |transition_name|
         begin
           fire(transition_name)
           result.add(transition_name)
@@ -74,8 +68,24 @@ module Petrinet
     end
 
     def to_svg
-      builder = SvgBuilder.new(self, @transition_vector_by_transition_name, @place_index_by_place_name.invert, @state_vector)
+      builder = GraphvizBuilder.new(self, @transition_vectors_by_transition_name, @place_index_by_place_name.invert, @state_vector)
       builder.svg
+    end
+
+    private
+
+    def new_state_vector(transition_name)
+      transition_vectors = @transition_vectors_by_transition_name[transition_name]
+      raise "Unknown transition: #{transition_name}. Known transitions: #{@transition_vectors_by_transition_name.keys}" if transition_vectors.nil?
+      transition_vectors.reduce(@state_vector) do |state_vector, transition_vector|
+        v = state_vector.zip(transition_vector).map { |s, t| s + t }
+        raise "Cannot fire: #{transition_name}" unless valid?(v)
+        v
+      end
+    end
+
+    def valid?(state_vector)
+      !(state_vector.any? { |s| s.negative? })
     end
 
     class Builder
@@ -100,12 +110,12 @@ module Petrinet
           h[k] = index
         end
 
-        transition_vector_by_transition_name_pairs = @transition_by_name.map do |transition_name, transition|
-          [transition_name, transition.to_vector(@place_names.size, place_index_by_place_name)]
+        transition_vectors_by_transition_name_pairs = @transition_by_name.map do |transition_name, transition|
+          [transition_name, transition.to_vectors(@place_names.size, place_index_by_place_name)]
         end
-        transition_vector_by_transition_name = Hash[transition_vector_by_transition_name_pairs]
+        transition_vectors_by_transition_name = Hash[transition_vectors_by_transition_name_pairs]
 
-        Net.new(@state_vector.freeze, place_index_by_place_name.freeze, transition_vector_by_transition_name.freeze)
+        Net.new(@state_vector.freeze, place_index_by_place_name.freeze, transition_vectors_by_transition_name.freeze)
       end
 
       class Transition
@@ -114,17 +124,19 @@ module Petrinet
           @give_place_names = give_place_names
         end
 
-        def to_vector(size, place_index_by_place_name)
-          transition_vector = Array.new(size, 0)
+        def to_vectors(size, place_index_by_place_name)
+          take_vector = Array.new(size, 0)
           @take_place_names.each do |take_place_name|
             index = place_index_by_place_name[take_place_name]
-            transition_vector[index] -= 1
+            take_vector[index] -= 1
           end
+
+          give_vector = Array.new(size, 0)
           @give_place_names.each do |give_place_name|
             index = place_index_by_place_name[give_place_name]
-            transition_vector[index] += 1
+            give_vector[index] += 1
           end
-          transition_vector
+          [take_vector, give_vector]
         end
       end
     end

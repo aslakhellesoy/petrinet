@@ -1,0 +1,8 @@
+#!/usr/bin/env ruby
+
+require "petrinet"
+
+pnml = ARGV[0]
+
+net = Petrinet::Net.from_pnml(IO.read(pnml))
+puts net.to_svg

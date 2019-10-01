@@ -59,7 +59,7 @@
                 <graphics>
                     <offset x="0.0" y="0.0"/>
                 </graphics>
-                <value>Default,1</value>
+                <value>Default,3</value>
             </initialMarking>
         </place>
         <transition id="YAY">
