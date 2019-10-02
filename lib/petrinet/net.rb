@@ -1,3 +1,4 @@
+require 'set'
 require_relative 'pnml_builder'
 require_relative 'graphviz_builder'
 
@@ -23,10 +24,13 @@ module Petrinet
       builder.net
     end
 
-    def initialize(state_vector, place_index_by_place_name, transition_vectors_by_transition_name)
+    attr_reader :prefire_transition_name
+
+    def initialize(state_vector, place_index_by_place_name, transition_vectors_by_transition_name, prefire_transition_name = nil)
       @state_vector = state_vector
       @place_index_by_place_name = place_index_by_place_name
       @transition_vectors_by_transition_name = transition_vectors_by_transition_name
+      @prefire_transition_name = prefire_transition_name
       freeze
     end
 
@@ -43,6 +47,10 @@ module Petrinet
     def fire(transition_name)
       new_state_vector = new_state_vector(transition_name)
       self.class.new(new_state_vector, @place_index_by_place_name, @transition_vectors_by_transition_name)
+    end
+
+    def prefire(transition_name)
+      self.class.new(@state_vector, @place_index_by_place_name, @transition_vectors_by_transition_name, transition_name)
     end
 
     def fireable?(transition_name)

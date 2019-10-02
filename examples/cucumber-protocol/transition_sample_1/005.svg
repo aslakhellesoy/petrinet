@@ -152,7 +152,7 @@
 <!-- transition_PickleStep -->
 <g id="node18" class="node">
 <title>transition_PickleStep</title>
-<polygon fill="#ff0000" stroke="#000000" points="200,-329 164,-329 164,-322 200,-322 200,-329"/>
+<polygon fill="#00ff00" stroke="#000000" points="200,-329 164,-329 164,-322 200,-322 200,-329"/>
 </g>
 <!-- place_Building Pickles&#45;&gt;transition_PickleStep -->
 <g id="edge10" class="edge">
@@ -164,7 +164,7 @@
 <g id="node2" class="node">
 <title>place_UNKNOWN PickleStep</title>
 <ellipse fill="none" stroke="#000000" cx="172" cy="-249" rx="27" ry="27"/>
-
+<circle fill="#000000" stroke="none" cx="172" cy="-249" r="4.800000000000001"/>
 </g>
 <!-- transition_PickleStepMatched(0) -->
 <g id="node19" class="node">

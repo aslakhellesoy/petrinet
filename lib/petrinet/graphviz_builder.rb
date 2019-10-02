@@ -1,6 +1,5 @@
 require 'tempfile'
 require 'nokogiri'
-require 'graphviz/dsl'
 
 module Petrinet
   class GraphvizBuilder
@@ -13,7 +12,7 @@ module Petrinet
 
     def svg
       dot_source = dot
-      dotfile = Tempfile.new('petrinet.dot')
+      dotfile = Tempfile.new("petrinet.dot")
       dotfile.write(dot_source)
       dotfile.close
       svgfile = Tempfile.new('petrinet.svg')
@@ -34,50 +33,80 @@ module Petrinet
     end
 
     def dot
-      # Lexical scoping because the graphviz DSL changes the value of self
-      net = @net
       transition_vectors_by_transition_name = Hash[@transition_vectors_by_transition_name.sort]
       place_name_by_place_index = Hash[@place_name_by_place_index.sort]
-      state_vector = @state_vector
 
-      tempfile = Tempfile.create('petrinet')
-      digraph :PetriNet do
-        graph[bgcolor: 'white', labeljust: 'l', labelloc: 't', nodesep: 0.5, penwidth: 0, ranksep: 0.5, style: 'filled']
+      dot = <<-EOS
+digraph PetriNet {
+  graph [
+    bgcolor=white,
+    labeljust=l,
+    labelloc=t,
+    nodesep=0.5,
+    penwidth=0,
+    ranksep=0.5,
+    style=filled
+  ];
+  node [label="\\N"];
+      EOS
 
-        transition_vectors_by_transition_name.each do |transition_name, transition_vectors|
-          transition_vectors.each do |transition_vector|
-            transition_vector.each_with_index do |direction, place_index|
-              place_name = place_name_by_place_index[place_index]
-              raise "No place_name for index #{place_index}: #{place_name_by_place_index}" if place_name.nil?
-              if direction < 0
-                self.send("node_#{place_name}".to_sym) << self.send("node_#{transition_name}".to_sym)
-              elsif direction > 0
-                self.send("node_#{transition_name}".to_sym) << self.send("node_#{place_name}".to_sym)
-              end
-            end
-
-            subgraph "cluster_transition_#{transition_name}" do
-              graph[label: transition_name, labeljust: 'l', labelloc: 'c']
-              fillcolor = net.fireable?(transition_name) ? 'red' : 'black'
-              node[shape: 'box', fillcolor: fillcolor, style: "solid, filled", height: 0.1, width: 0.5]
-              self.send("node_#{transition_name}".to_sym)[label: '', height: 0.1, width: 0.5]
-            end
-          end
-        end
-
-        place_name_by_place_index.each do |place_index, place_name|
-          marking = state_vector[place_index]
-          subgraph "cluster_place_#{place_name}" do
-            label = place_name
-            graph[label: label]
-            node[shape: 'circle']
-            self.send("node_#{place_name}".to_sym)[label: marking]
-          end
-        end
-
-        output :dot => tempfile.path
+      place_name_by_place_index.each do |place_index, place_name|
+        marking = @state_vector[place_index]
+        dot += <<-EOS
+  subgraph "cluster_place_#{place_name}" {
+    graph [
+      label="#{place_name}",
+    ];
+    node [shape=circle];
+    "place_#{place_name}" [
+      label=#{marking},
+      width=0.75
+    ];
+  }
+        EOS
       end
-      tempfile.read
+
+      transition_vectors_by_transition_name.each do |transition_name, transition_vectors|
+        fillcolor = if @net.prefire_transition_name == transition_name
+                      'green'
+                    else
+                      @net.fireable?(transition_name) ? 'red' : 'black'
+                    end
+
+        dot += <<-EOS
+  subgraph "cluster_transition_#{transition_name}" {
+    graph [
+      label="#{transition_name}",
+    ];
+    node [
+      shape=box,
+      fillcolor="#{fillcolor}",
+      style="solid, filled",
+      height=0.1,
+      width=0.5
+    ];
+    "transition_#{transition_name}" [
+      label="",
+      height=0.1,
+      width=0.5
+    ];
+  }
+        EOS
+        transition_vectors.each do |transition_vector|
+          transition_vector.each_with_index do |direction, place_index|
+            place_name = place_name_by_place_index[place_index]
+            raise "No place_name for index #{place_index}: #{place_name_by_place_index}" if place_name.nil?
+            if direction < 0
+              dot += %Q{  "place_#{place_name}" -> "transition_#{transition_name}"\n}
+            elsif direction > 0
+              dot += %Q{  "transition_#{transition_name}" -> "place_#{place_name}"\n}
+            end
+          end
+        end
+      end
+
+      dot += "}\n"
+      dot
     end
 
     def draw_tokens(doc)

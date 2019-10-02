@@ -38,6 +38,8 @@ else
   end
   write_svg(net, options)
   options[:transitions].each do |transition|
+    firing = net.prefire(transition)
+    write_svg(firing, options)
     net = net.fire(transition)
     write_svg(net, options)
   end
