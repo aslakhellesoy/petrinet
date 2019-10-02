@@ -18,7 +18,7 @@ module Petrinet
       dotfile.close
       svgfile = Tempfile.new('petrinet.svg')
       # circo dot fdp neato nop nop1 nop2 osage patchwork sfdp twopi
-      `dot -T svg  #{dotfile.path} -o #{svgfile.path}`
+      `dot -T svg -Kdot #{dotfile.path} -o #{svgfile.path}`
       `cat #{svgfile.path}`
       svg = svgfile.read
       processed_svg(svg)
@@ -36,8 +36,8 @@ module Petrinet
     def dot
       # Lexical scoping because the graphviz DSL changes the value of self
       net = @net
-      transition_vectors_by_transition_name = @transition_vectors_by_transition_name
-      place_name_by_place_index = @place_name_by_place_index
+      transition_vectors_by_transition_name = Hash[@transition_vectors_by_transition_name.sort]
+      place_name_by_place_index = Hash[@place_name_by_place_index.sort]
       state_vector = @state_vector
 
       tempfile = Tempfile.create('petrinet')
