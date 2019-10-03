@@ -2,7 +2,30 @@
 
 A command line utility for generating animated gifs of petri nets. Here is an example:
 
+![x-ray](./examples/x-ray-machine/v1-problem.gif)
 
+The input for generating this gif is two file:
+
+* a [PNML](https://en.wikipedia.org/wiki/Petri_Net_Markup_Language) file, for example created with 
+  [PIPE](https://sarahtattersall.github.io/PIPE/) or other petri net diagramming tool.
+* a *marking-transition* script
+
+## Marking-Transition script
+
+This is a simple text file to specify the initial *marking* of the net, and transitions to fire. For example:
+
+```
+wait:3
+enter
+make_photo
+enter
+enter
+```
+
+This can be written by hand, or it can be generated.
+
+A typical use case is to use automated tests running against a system, record events happening in the system,
+and generate the file from that. This way, living documentation can be generated from those tests.
 
 ## Prerequisites
 
