@@ -1,11 +1,15 @@
 # Petrinet
 
-This library implements petri nets with the following functionality:
+A command line utility for generating animated gifs of petri nets. Here is an example:
 
-* A DSL to define a PN
-* Import a PN from PNML
-* Generate diagrams
-* Simulate transition
+
+
+## Prerequisites
+
+You need the following tools installed:
+
+* Graphviz - the `dot` executable must be on your `PATH`
+* ImageMagick - the `convert` executable must be on your `PATH`
 
 ## Installation
 
