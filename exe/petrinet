@@ -17,30 +17,5 @@ OptionParser.new do |opts|
 end.parse!
 
 pnml = ARGV[0]
-
-$n = 0
-def write_svg(net, options)
-  path = "#{options[:output]}/#{'%03d' % $n}.svg"
-  File.open(path, 'w:UTF-8') {|io| io.puts(net.to_svg)}
-  $n += 1
-end
-
 net = Petrinet::Net.from_pnml(IO.read(pnml))
-if options[:transitions].empty?
-  if options[:output]
-    write_svg(net, options)
-  else
-    STDOUT.puts net.to_svg
-  end
-else
-  if options[:output].nil?
-    raise "Must specify --output when --transition is used"
-  end
-  write_svg(net, options)
-  options[:transitions].each do |transition|
-    firing = net.prefire(transition)
-    write_svg(firing, options)
-    net = net.fire(transition)
-    write_svg(net, options)
-  end
-end
+net.to_animated_gif(options[:transitions], options[:output])

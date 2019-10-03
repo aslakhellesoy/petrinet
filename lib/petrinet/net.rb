@@ -1,6 +1,7 @@
 require 'set'
 require_relative 'pnml_builder'
 require_relative 'graphviz_builder'
+require_relative 'animated_gif_builder'
 
 module Petrinet
   # Represents a Petri Net in a particular state. Instances of this class are immutable. The following methods return
@@ -78,6 +79,11 @@ module Petrinet
     def to_svg
       builder = GraphvizBuilder.new(self, @transition_vectors_by_transition_name, @place_index_by_place_name.invert, @state_vector)
       builder.svg
+    end
+
+    def to_animated_gif(transition_names, gif_path)
+      builder = AnimatedGifBuilder.new(self)
+      builder.write(transition_names, gif_path)
     end
 
     private

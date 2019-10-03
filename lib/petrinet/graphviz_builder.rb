@@ -10,6 +10,7 @@ module Petrinet
       @state_vector = state_vector
     end
 
+    # Generates an SVG for a net
     def svg
       dot_source = dot
       dotfile = Tempfile.new("petrinet.dot")
@@ -109,6 +110,7 @@ digraph PetriNet {
       dot
     end
 
+    # Replaces the place labels (which are numbers) with black dots.
     def draw_tokens(doc)
       # place radius (outer)
       pr = 6
