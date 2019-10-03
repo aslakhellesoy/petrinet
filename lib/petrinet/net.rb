@@ -36,9 +36,9 @@ module Petrinet
     end
 
     # Marks the petri net and returns a new instance
-    def mark(markings)
+    def mark(marking)
       new_state_vector = Array.new(@state_vector.size, 0)
-      markings.each do |place_name, token_count|
+      marking.each do |place_name, token_count|
         index = @place_index_by_place_name[place_name]
         new_state_vector[index] = token_count
       end

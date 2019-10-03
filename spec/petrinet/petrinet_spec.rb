@@ -43,7 +43,7 @@ RSpec.describe Petrinet::Net do
 
   describe ".from_pnml" do
     it "builds a net" do
-      pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../examples/voting/voting.xml'))
+      pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../../examples/voting/voting.xml'))
       pn = pn.fire(:YAY)
       pn = pn.fire(:YAY)
       pn = pn.fire(:YAY)
@@ -55,7 +55,7 @@ RSpec.describe Petrinet::Net do
 
   describe ".to_svg" do
     it "produces an svg" do
-      pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../examples/voting/voting.xml'))
+      pn = Petrinet::Net.from_pnml(IO.read(File.dirname(__FILE__) + '/../../examples/voting/voting.xml'))
       svg = pn.to_svg
     end
   end

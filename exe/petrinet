@@ -11,11 +11,23 @@ OptionParser.new do |opts|
     options[:transitions] << t.to_sym
   end
 
-  opts.on("-o", "--output=PATH", "Specify a file or directory to write the SVG(s)") do |o|
+  opts.on("-o", "--output=PATH", "Where to write the animated gif") do |o|
     options[:output] = o
+  end
+
+  opts.on("-s", "--script=SCRIPT", "Specify a script file") do |o|
+    options[:script] = o
   end
 end.parse!
 
 pnml = ARGV[0]
 net = Petrinet::Net.from_pnml(IO.read(pnml))
-net.to_animated_gif(options[:transitions], options[:output])
+transitions = options[:transitions]
+output = options[:output]
+if options[:script]
+  script = Petrinet::MarkingTransitionScript.new(IO.read(options[:script]))
+  net = net.mark(script.marking)
+  transitions = script.transitions + transitions
+  output ||= options[:script].gsub(/\.txt$/, '.gif')
+end
+net.to_animated_gif(transitions, output)

@@ -19,7 +19,7 @@
                 <graphics>
                     <offset x="0.0" y="0.0"/>
                 </graphics>
-                <value>Default,3</value>
+                <value>0</value>
             </initialMarking>
         </place>
         <place id="before">
