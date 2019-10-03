@@ -5,7 +5,7 @@ RUBY_FILES=$(wildcard lib/**/*.rb)
 
 .SECONDARY:
 
-default: .rspec_ok examples/cucumber-protocol/transition_sample_1.gif examples/x-ray-machine/v1-problem.gif
+default: .rspec_ok examples/cucumber-protocol/transition_sample_1.gif examples/x-ray-machine/v1-problem.gif examples/x-ray-machine/v2-fixed.gif
 
 .rspec_ok: Gemfile.lock $(RUBY_FILES)
 	bundle exec rspec
@@ -20,6 +20,9 @@ examples/cucumber-protocol/transition_sample_1.gif: examples/cucumber-protocol/c
 
 examples/x-ray-machine/v1-problem.gif: examples/x-ray-machine/x-ray-machine-1.xml Gemfile.lock $(RUBY_FILES) exe/petrinet
 	ruby -Ilib exe/petrinet --script examples/x-ray-machine/v1-problem.txt --output $@ $<
+
+examples/x-ray-machine/v2-fixed.gif: examples/x-ray-machine/x-ray-machine-2.xml Gemfile.lock $(RUBY_FILES) exe/petrinet
+	ruby -Ilib exe/petrinet --script examples/x-ray-machine/v2-fixed.txt --output $@ $<
 
 clean:
 	rm -f examples/**/*.gif .rspec_ok

@@ -2,7 +2,7 @@
 
 A command line utility for generating animated gifs of petri nets. Here is an example:
 
-![x-ray](./examples/x-ray-machine/v1-problem.gif)
+![x-ray](./examples/x-ray-machine/v2-fixed.gif)
 
 The input for generating this gif is two file:
 

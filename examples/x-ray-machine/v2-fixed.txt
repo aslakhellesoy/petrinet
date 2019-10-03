@@ -1,0 +1,11 @@
+wait:3
+free:1
+enter
+make_photo
+leave
+enter
+make_photo
+leave
+enter
+make_photo
+leave
