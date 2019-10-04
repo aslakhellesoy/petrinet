@@ -118,10 +118,9 @@ module Petrinet
       end
 
       def net
-        place_index_by_place_name = Hash.new do |h, k|
-          index = h.size
-          @state_vector[index] = 0
-          h[k] = index
+        place_index_by_place_name = Hash.new
+        @place_names.sort.each_with_index do |place_name, index|
+          place_index_by_place_name[place_name] = index
         end
 
         transition_vectors_by_transition_name_pairs = @transition_by_name.map do |transition_name, transition|
