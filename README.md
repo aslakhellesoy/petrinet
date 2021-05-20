@@ -9,7 +9,7 @@ An X-Ray machine in a hospital, taken from [Modeling Business Processes - A Petr
 
 ![x-ray](./examples/x-ray-machine/v2-fixed.gif)
 
-The input for generating this gif is two file:
+The input for generating this gif is two files:
 
 * a [PNML](https://en.wikipedia.org/wiki/Petri_Net_Markup_Language) file, for example created with 
   [PIPE](https://sarahtattersall.github.io/PIPE/) or other petri net diagramming tool.
