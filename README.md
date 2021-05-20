@@ -66,7 +66,7 @@ This will generate a file named `my-marking-transition.gif` (the name is derived
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/cucumber/petrinet.
+Bug reports and pull requests are welcome on GitHub at https://github.com/aslakhellesoy/petrinet.
 
 ## License
 
